@@ -1,4 +1,4 @@
-﻿#include <iostream>
+#include <iostream>
 #include <ctime>
 #include <cstdlib>
 
@@ -172,7 +172,7 @@ size_t getSize()
 
 int getNumber()
 {
-    int number;
+    int number = 0.0;
     cin >> number;
     if (cin.fail())
     {

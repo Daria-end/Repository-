@@ -1,7 +1,8 @@
 #include <iostream>
 #include <cmath>
-#include <limits>
-
+#include <limits> // Для numeric_limits
+#define _USE_MATH_DEFINES // for C++
+#include <cmath>
 using namespace std;
 
 // Определение константы PI
@@ -20,7 +21,7 @@ double getValue();
  * @param x3, y3 - координаты точки C
  * @return true, если точки на одной прямой, иначе false
  */
-bool areCollinear(double x1, double y1, double x2, double y2, double x3, double y3);
+bool areCollinear(const double x1,const double y1,const double x2,const double y2,const double x3,const double y3);
 
 /**
  * @brief Вычисляет угол B в градусах между AB и BC
@@ -29,13 +30,7 @@ bool areCollinear(double x1, double y1, double x2, double y2, double x3, double 
  * @param x3, y3 - координаты точки C
  * @return Угол B в градусах
  */
-double calculateAngleB(double x1, double y1, double x2, double y2, double x3, double y3);
-
-/**
- * @brief Проверяет значение на корректность (больше нуля)
- * @param value - проверяемое значение
- */
-void checkValue(double value);
+double calculateAngleB(const double x1,const double y1,const double x2,const double y2,const double x3,const double y3);
 
 int main() {
     setlocale(LC_ALL, "rus");
@@ -54,7 +49,8 @@ int main() {
 
     if (areCollinear(x1, y1, x2, y2, x3, y3)) {
         cout << "Точки A, B и C расположены на одной прямой." << endl;
-    } else {
+    }
+    else {
         double angleB = calculateAngleB(x1, y1, x2, y2, x3, y3);
         cout << "Точки A, B и C не расположены на одной прямой." << endl;
         cout << "Угол B: " << angleB << " градусов." << endl;
@@ -64,50 +60,47 @@ int main() {
 }
 
 double getValue() {
-    double value = 0;
+    double value=0;
     while (true) {
         cin >> value;
-        try {
-            checkValue(value);
-            break; // Если значение корректно, выходим из цикла
-        } catch (const char* msg) {
-            cout << msg << endl;
-            cout << "Попробуйте снова: ";
+        if (cin.fail()) {
+            cout << "Ошибка: введено некорректное значение. Пожалуйста, введите число: ";
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        } else {
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            return value;
         }
     }
-    return value;
 }
 
 bool areCollinear(double x1, double y1, double x2, double y2, double x3, double y3) {
-    // Проверка на коллинеарность с использованием площади треугольника
-    return (y2 - y1) * (x3 - x2) == (y3 - y2) * (x2 - x1);
+    // Проверка на коллинеарность через площадь треугольника (должна быть нулевой)
+    double area = (x2 - x1) * (y3 - y1) - (y2 - y1) * (x3 - x1);
+    return abs(area) < 1e-10; // Сравнение с учётом погрешности вычислений
 }
 
 double calculateAngleB(double x1, double y1, double x2, double y2, double x3, double y3) {
-    // Вектор AB
-    double ABx = x2 - x1;
-    double ABy = y2 - y1;
-
+    // Вектор BA
+    double BAx = x1 - x2;
+    double BAy = y1 - y2;
+    
     // Вектор BC
     double BCx = x3 - x2;
     double BCy = y3 - y2;
 
-    // Вычисление угла между векторами AB и BC
-    double dotProduct = ABx * BCx + ABy * BCy;
-    double magnitudeAB = sqrt(ABx * ABx + ABy * ABy);
+    // Скалярное произведение векторов
+    double dotProduct = BAx * BCx + BAy * BCy;
+    
+    // Длины векторов
+    double magnitudeBA = sqrt(BAx * BAx + BAy * BAy);
     double magnitudeBC = sqrt(BCx * BCx + BCy * BCy);
 
-    // Угол в радианах
-    double angleRadian = acos(dotProduct / (magnitudeAB * magnitudeBC));
+    // Защита от деления на ноль и арккосинуса значений вне [-1, 1]
+    double cosAngle = dotProduct / (magnitudeBA * magnitudeBC);
+    cosAngle = max(-1.0, min(1.0, cosAngle)); // Ограничиваем значение
 
-    // Перевод угла в градусы
+    // Угол в радианах и перевод в градусы
+    double angleRadian = acos(cosAngle);
     return angleRadian * (180.0 / PI);
-}
-
-void checkValue(double value) {
-    if (cin.fail() || value <= 0) {
-        cin.clear(); // Сбрасываем состояние потока
-        cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Очищаем буфер
-        throw "Ошибка: введено некорректное значение.";
-    }
 }
